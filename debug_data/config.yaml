@@ -1,0 +1,21 @@
+commands:
+  set:
+    name: "set"
+    description: "top-level command for setting system parameters"
+    run: ""
+    flags: 
+      - flag: ["-v", "--verbose"]
+        flag_type: "Modify"
+        description: "Enable verbose output"
+    subcommands:
+      wallpaper:
+        name: "wallpaper"
+        description: "Set the desktop wallpaper"
+        run: "set_wallpaper"
+        params:
+          - name: "image_path"
+            param_type: "String"
+        flags:
+          - flag: ["--preview"]
+            flag_type: "Overwrite"
+            description: "Preview the wallpaper before applying"
