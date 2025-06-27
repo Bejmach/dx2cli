@@ -2,9 +2,8 @@ commands:
   set:
     name: "set"
     description: "top-level command for setting system parameters"
-    run: ""
     flags: 
-      - flag: ["-v", "--verbose"]
+      - names: ["-v", "--verbose"]
         flag_type: "Modify"
         description: "Enable verbose output"
     subcommands:
@@ -16,6 +15,6 @@ commands:
           - name: "image_path"
             param_type: "String"
         flags:
-          - flag: ["--preview"]
+          - names: ["--preview"]
             flag_type: "Overwrite"
             description: "Preview the wallpaper before applying"

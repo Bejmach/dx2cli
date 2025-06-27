@@ -1,27 +1,17 @@
 pub mod cli;
 pub mod conf;
 
-use std::fs;
-
 use cli::command_builder::*;
 use conf::types::*;
 
 fn main(){
-    let config_str = fs::read_to_string("debug_data/config.yaml").unwrap();
-
     let command = "--debug set wallpaper /path/to/file.png";
-    let mut builder: CommandBuilder = CommandBuilder::new(None);
 
-    let parsed = builder.parse_command(command.to_string());
+    let config: Config = Config::from_file("debug_data/config.yaml").unwrap();
 
-    println!("{}", parsed);
-    println!("{}", config_str);
+    let builder = CommandBuilder::new(Some(config));
 
-    let config: Config = serde_yml::from_str(&config_str).unwrap();
+    let parsed_command = builder.parse_command(command.to_string());
 
-    println!("{:#?}", config);
-
-    builder.set_config(config);
-
-    println!("{}", builder.validate_command(parsed));
+    println!("{:#?}", parsed_command);
 }
