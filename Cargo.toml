@@ -1,5 +1,5 @@
 [package]
-name = "dx2cli"
+name = "gracli"
 version = "0.1.0"
 edition = "2024"
 
