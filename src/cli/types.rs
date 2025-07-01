@@ -152,5 +152,5 @@ impl CliParam{
 }
 
 pub fn is_flag(str: String) -> bool{
-    str.len() != 0 && str.chars().nth(0).unwrap() == '-'
+    str.len() != 0 && str.starts_with('-')
 }

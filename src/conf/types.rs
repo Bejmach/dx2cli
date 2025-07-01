@@ -26,7 +26,6 @@ impl Config{
 
 #[derive(Serialize, Deserialize, Debug)]
 pub struct ConfCommand{
-    pub name: String,
     pub description: String,
 
     #[serde(default = "default_subcommand_map")]
@@ -57,7 +56,6 @@ impl ConfCommand{
 
     pub fn placeholder() -> Self{
         Self { 
-            name: "placeholder".to_string(), 
             description: "placeholder command".to_string(), 
             subcommands: HashMap::new(), 
             flags: Vec::new(), 
@@ -71,7 +69,7 @@ fn default_subcommand_map() -> std::collections::HashMap<String, ConfCommand>{
     std::collections::HashMap::new()
 }
 
-#[derive(Serialize, Deserialize, Debug)]
+#[derive(Serialize, Deserialize, Debug, PartialEq, Eq, Clone, Copy)]
 pub enum FlagType{
     Modify,
     Overwrite,
@@ -107,7 +105,19 @@ fn default_run() -> String{
     "".to_string()
 }
 
-#[derive(Serialize, Deserialize, Debug, PartialEq, Eq)]
+impl ConfFlag{
+    pub fn new(names: Vec<String>, description: String) -> Self{
+        ConfFlag { 
+            names,
+            description, 
+            flag_type: FlagType::Modify,
+            params: Vec::new(),
+            run: "".to_string(),
+        }
+    }
+}
+
+#[derive(Serialize, Deserialize, Debug, PartialEq, Eq, Clone, Copy)]
 pub enum ParamType{
     Int,
     String,

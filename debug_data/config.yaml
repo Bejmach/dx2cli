@@ -1,6 +1,5 @@
 commands:
   set:
-    name: "set"
     description: "top-level command for setting system parameters"
     flags: 
       - names: ["-v", "--verbose"]
@@ -8,7 +7,6 @@ commands:
         description: "Enable verbose output"
     subcommands:
       wallpaper:
-        name: "wallpaper"
         description: "Set the desktop wallpaper"
         run: "set_wallpaper"
         params:

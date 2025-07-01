@@ -35,7 +35,7 @@ impl CommandBuilder{
 
             let param_val = param.unwrap();
 
-            if cur_command.name == "default".to_string(){
+            if cur_command.name == "default"{
                 if is_flag(param_val.to_string()){
                     println!("Skipping default flags");
                     param = split_command.next();
@@ -53,7 +53,7 @@ impl CommandBuilder{
                 }
             }
 
-            else if cur_config.name == "placeholder".to_string(){
+            else if cur_config.description == "placeholder command"{
                 println!("Error while parsing command. Config placeholder found");
                 return None;
             }
@@ -87,8 +87,6 @@ impl CommandBuilder{
                 cur_command.add_flag(flag);
             }
             
-            println!("{}, {:?}", cur_config.name, cur_config.params);
-
             for i in 0..cur_config.params.len(){
                 println!("{}", cur_config.params[i].name);
                 if param.is_none(){
