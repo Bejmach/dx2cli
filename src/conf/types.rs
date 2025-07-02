@@ -1,4 +1,4 @@
-use std::{collections::HashMap, fs};
+use std::{collections::HashMap, env, fs};
 
 use serde::{Serialize, Deserialize};
 
@@ -8,8 +8,11 @@ pub struct Config{
 }
 
 impl Config{
-    pub fn from_file(path: &str) -> Option<Self>{
-        let config_str = fs::read_to_string(path).unwrap();
+    pub fn from_file(name: &str) -> Option<Self>{
+        let mut config_path = env::home_dir().expect("Failed to get home directory");
+        config_path.push(format!(".config/gracli/{name}.yaml"));
+
+        let config_str = fs::read_to_string(config_path).expect(&format!("No config with name: \"{name}\", exist"));
         let config = serde_yml::from_str(&config_str);
         if config.is_ok(){
             return Some(config.unwrap());
@@ -80,6 +83,9 @@ pub struct ConfFlag{
     pub names: Vec<String>,
     pub description: String,
 
+    #[serde(default = "default_flag_id")]
+    pub id: String,
+
     #[serde(default = "default_flag_type")]
     pub flag_type: FlagType,
 
@@ -88,6 +94,10 @@ pub struct ConfFlag{
 
     #[serde(default = "default_run")]
     pub run: String,
+}
+
+fn default_flag_id() -> String{
+    String::new()
 }
 
 fn default_flag_type() -> FlagType{
@@ -110,9 +120,10 @@ impl ConfFlag{
         ConfFlag { 
             names,
             description, 
+            id: String::new(),
             flag_type: FlagType::Modify,
             params: Vec::new(),
-            run: "".to_string(),
+            run: String::new(),
         }
     }
 }
