@@ -1,8 +1,8 @@
-use std::{collections::HashMap, env, fs};
+use std::{collections::HashMap, env, fs::{self, File}, io::Write};
 use serde::{Serialize, Deserialize};
 use sha2::{Digest, Sha256};
 
-use crate::{conf::types::*, security::key_reader::KeyReader};
+use crate::{conf::types::*, default::config::*};
 
 #[derive(Serialize, Deserialize, Debug)]
 pub struct ConfSignature{
@@ -19,32 +19,45 @@ impl ConfHasher{
     }
     
     #[allow(unused)]
-    pub fn parse_conf(&self, config: Config) -> String{
-        get_subcommand_str(&config.commands)
+    pub fn parse_conf(&self, commands: &std::collections::HashMap<String, ConfCommand>) -> String{
+        get_subcommand_str(commands)
     }
 
-    pub fn verify_signature(&self, name: &String) -> bool{
+    /*pub fn verify_signature(&self, name: &String) -> bool{
         let config = Config::from_file(name).expect("No cofig file found");
         let signature = self.read_signature(name).expect("No signature exist");
 
-        let key_reader = KeyReader::default();
+        let defaults = DefaultReader::new();
 
-        let config_hash = encrypt_string(self.parse_conf(config), key_reader.get_key().to_string());
+        let config_hash = encrypt_string(self.parse_conf(config), defaults.get_key().to_string());
 
         config_hash == signature.key
     }
     pub fn create_signature(&self, name: &str){
         let config = Config::from_file(name).expect("No cofig file found");
 
-        let config_hash = self.parse_conf(config);
+        let config_parsed = self.parse_conf(config);
+        let defaults = DefaultReader::new();
 
-       let mut sig_path = env::home_dir().expect("Failed to get home directory");
-        sig_path.push(format!(".config/gracli/{name}.sig.yaml"));
-    }
+        let config_hash = encrypt_string(config_parsed, defaults.get_key().to_string());
+
+        let conf_sig = ConfSignature{key: config_hash};
+
+        let config_yaml = serde_yml::to_string(&conf_sig).expect("Could not parse config to string");
+
+        let signature_str = format!("# hash generated automatically usign graCli, any change will cause the config to stop working, and will require to verify the file again\n{config_yaml}");
+
+        let mut sig_path = env::home_dir().expect("Failed to get home directory");
+        sig_path.push(format!(".config/gracli/.{name}.sig.yaml"));
+
+        let mut file = File::create(&sig_path).expect("Could not create file");
+
+        file.write_all(signature_str.as_bytes()).expect("Could not write config to file");
+    }*/
 
     pub fn signature_exists(&self, name: &String) -> bool{
         let mut sig_path = env::home_dir().expect("Failed to get home directory");
-        sig_path.push(format!(".config/gracli/{name}.sig.yaml"));
+        sig_path.push(format!(".config/gracli/.{name}.sig.yaml"));
 
         sig_path.exists()
     }
@@ -54,7 +67,7 @@ impl ConfHasher{
         }
 
         let mut sig_path = env::home_dir().expect("Failed to get home directory");
-        sig_path.push(format!(".config/gracli/{name}.sig.yaml"));
+        sig_path.push(format!(".config/gracli/.{name}.sig.yaml"));
     
         let file_str = fs::read_to_string(sig_path).unwrap();
         

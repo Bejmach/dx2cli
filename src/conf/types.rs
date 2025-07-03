@@ -2,29 +2,36 @@ use std::{collections::HashMap, env, fs};
 
 use serde::{Serialize, Deserialize};
 
-#[derive(Serialize, Deserialize, Debug)]
-pub struct Config{
-    pub commands: std::collections::HashMap<String, ConfCommand>,
+static EXPECTED_FORMATS: &[&str] = &[".yaml", ".yml", ".gra.yaml", ".gra.yml"];
+
+pub fn commands_from_file(path: &str) -> std::collections::HashMap<String, ConfCommand>{
+    let mut config_path = env::home_dir().expect("Failed to get home directory");
+    config_path.push(format!(".config/gracli"));
+
+    let correct_path = verify_format(&config_path, path);
+    if correct_path.is_empty(){
+        println!("{}", config_path.to_str().unwrap());
+        panic!("No file with the provided name found");
+    }
+
+    let config_str = fs::read_to_string(correct_path).expect(&format!("No config in location: \"{path}\", exist"));
+    let commands: std::collections::HashMap<String, ConfCommand> = serde_yml::from_str(&config_str).expect("Could not parse config");
+
+    commands
 }
 
-impl Config{
-    pub fn from_file(name: &str) -> Option<Self>{
-        let mut config_path = env::home_dir().expect("Failed to get home directory");
-        config_path.push(format!(".config/gracli/{name}.yaml"));
+pub fn verify_format(path: &std::path::Path, sufix: &str) -> String{
+    for form in EXPECTED_FORMATS{
+        let mut expected_path = path.to_path_buf();
+        expected_path.push(format!("{sufix}{form}"));
 
-        let config_str = fs::read_to_string(config_path).expect(&format!("No config with name: \"{name}\", exist"));
-        let config = serde_yml::from_str(&config_str);
-        if config.is_ok(){
-            return Some(config.unwrap());
-        }
-        else{
-            println!("Parse error: {}", config.err().unwrap());
-            return None;
+        println!("{}: {}", expected_path.to_str().unwrap(), expected_path.exists());
+
+        if expected_path.exists(){
+            return expected_path.to_str().unwrap().to_string();
         }
     }
-    pub fn get_command(&self, command: &String) -> Option<&ConfCommand>{
-        self.commands.get(command)
-    }
+    String::new()
 }
 
 #[derive(Serialize, Deserialize, Debug)]
@@ -33,6 +40,9 @@ pub struct ConfCommand{
 
     #[serde(default = "default_subcommand_map")]
     pub subcommands: std::collections::HashMap<String, ConfCommand>,
+
+    #[serde(default = "default_subcommand_import")]
+    pub import: Vec<String>,
 
     #[serde(default = "default_flag_vec")]
     pub flags: Vec<ConfFlag>,
@@ -60,12 +70,21 @@ impl ConfCommand{
     pub fn placeholder() -> Self{
         Self { 
             description: "placeholder command".to_string(), 
-            subcommands: HashMap::new(), 
+            subcommands: HashMap::new(),
+            import: Vec::new(),
             flags: Vec::new(), 
             params: Vec::new(),
             run: "".to_string(),
         }
     }
+
+    pub fn extend(&mut self, commands: HashMap<String, ConfCommand>){
+        self.subcommands.extend(commands);
+    }
+}
+
+fn default_subcommand_import() -> Vec<String>{
+    Vec::new()
 }
 
 fn default_subcommand_map() -> std::collections::HashMap<String, ConfCommand>{

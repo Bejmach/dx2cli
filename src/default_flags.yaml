@@ -1,0 +1,11 @@
+default:
+  description: "Default command start"
+  flags:
+    - names: ["-r", "--remember"]
+      description: "Remember the command in named pipeline"
+      params:
+        - name: "remember_file"
+          param_type: "String"
+    - names: ["-d", "--default"]
+      description: "Use default config"
+

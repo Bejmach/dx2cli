@@ -1,26 +1,21 @@
+use std::collections::HashMap;
+
 use crate::cli::types::*;
 use crate::conf::types::*;
 
 #[allow(dead_code)]
 pub struct CommandBuilder{
-    config: Option<Config>,
+    commands: HashMap<String, ConfCommand>,
 }
 
 impl CommandBuilder{
-    pub fn new(config: Option<Config>) -> Self{
+    pub fn new(commands: HashMap<String, ConfCommand>) -> Self{
         Self {
-            config
+            commands
         }
-    }
-
-    pub fn set_config(&mut self, config: Config){
-        self.config = Some(config);
     }
 
     pub fn parse_command(&self, command: String) -> Option<CliCommand>{
-        if self.config.is_none(){
-            return None;
-        }
 
         let mut split_command = command.split_whitespace();
         let mut base_command = CliCommand::new("default".to_string());
@@ -42,13 +37,13 @@ impl CommandBuilder{
                     continue;
                 }
                 else{
-                    if self.config.as_ref().unwrap().get_command(&param_val.to_string()).is_none(){
+                    if !self.commands.contains_key(param_val){
                         println!("No command \"{}\" in \"{}\"", param.unwrap(), base_command.to_string());
                         return None;
                     }
                     cur_command.subcommand = Some(Box::new(CliCommand::new(param_val.to_string())));
                     cur_command = cur_command.subcommand.as_mut().unwrap();
-                    cur_config = self.config.as_ref().unwrap().get_command(&param_val.to_string()).unwrap();
+                    cur_config = self.commands.get(param_val).unwrap();
                     param = split_command.next();
                 }
             }
