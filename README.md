@@ -20,6 +20,7 @@ Main component of configuration, that allows you to set a command used in this p
   flags: 
     - list of flags
   params:
+  import: ["file to import"]
     - list of params
   subcommands:
     list of subcommands
@@ -52,27 +53,25 @@ param_type: "String/Int/Float/Bool" # type of the parameter
 
 ### Example configuration
 
-> Each config is stated with ``commands:``
-
 ```yaml
-commands:
-  set:
-    description: "top-level command for setting system parameters"
-    flags: 
-      - names: ["-v", "--verbose"]
-        flag_type: "Modify"
-        description: "Enable verbose output"
-    subcommands:
-      wallpaper:
-        description: "Set the desktop wallpaper"
-        run: "set_wallpaper"
-        params:
-          - name: "image_path"
-            param_type: "String"
-        flags:
-          - names: ["--preview"]
-            flag_type: "Overwrite"
-            description: "Preview the wallpaper before applying"
+set:
+  description: "top-level command for setting system parameters"
+  flags: 
+    - names: ["-v", "--verbose"]
+      flag_type: "Modify"
+      description: "Enable verbose output"
+  import: ["plugins.config2"]
+  subcommands:
+    wallpaper:
+      description: "Set the desktop wallpaper"
+      run: "set_wallpaper"
+      params:
+        - name: "image_path"
+          param_type: "String"
+      flags:
+        - names: ["--preview"]
+          flag_type: "Overwrite"
+          description: "Preview the wallpaper before applying"
 ```
 
 ## Usability
@@ -81,6 +80,8 @@ The program will have few additional functions, that will make it easier to use 
 
 - Automatic --help flag that would create a list of every subcommand, flag and params, for the used convinience
 - Remember flag ``-r / --remember {name}`` that would allow for saving commands to a list of remembered commands, to run all at once using ``--default recall {name}``
+- Allows importing orger configs as subcommands using lua like syntax where every file path begins with ``~/.config/gracli``
+- allows to change used config by running ``--default set config {name}``, where ``name`` is a path to config that starts in ``~/.config/gracli`` with lua like syntax(folder.file) without file type. Program scans for files with supported type (.yml/.yaml/.gra.yml/.gra.yaml)
 
 ## Security
 
@@ -90,6 +91,7 @@ The security will be provided by using ``.sig.yaml`` files that would contain th
 - [x] Parsing config file to rust structs
 - [x] Parsing command based on configs
 - [ ] Default commands
-- [ ] Generating signatures
+- [x] Generating signatures
 - [ ] running commands
 - [ ] remembering commands
+- [x] importing other files
